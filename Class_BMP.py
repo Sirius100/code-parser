@@ -15,12 +15,11 @@ class BMP_FF():
     Класс для работы браузера Firefox через прокси browsermobproxy
     для перехвата и анализа Get запросов.
     Разобраться как удалять har
-    разобраться как удалять экземпляр класса с помощью del
-    метод read_data_proxy не реализован
     """
- 
+
+
     def __init__(self,firefox_port = 8080):
-        """По умолчанию класс работает с localhost на 8080-ом порту, но если этот порт занят или нужен под что то то можно задать другой порт при создании экземпляра класса """
+        """По умолчанию класс работает с localhost на 8080-ом порту, но если этот порт занят или нужен под что то можно задать другой порт при создании экземпляра класса """
         """инициализация настроек браузера Firefox для работы через прокси"""
         self.port_firefox = firefox_port # 
         #путь прописывать полностью от home до бинарника который скачивается отдельно не через pip install
@@ -53,9 +52,7 @@ class BMP_FF():
         try:
             self.url = 'http://www.%s' % (site_url)
             self.driver = webdriver.Firefox(self.profile)
-            self.resp= requests.put('http://localhost:%s/proxy/%s/har' % (self.port_firefox,self.browser_port), {"initialPageRef": ""})# начинаю сессию мониторинга
             self.driver.get(self.url)
-            self.resp = requests.get('http://localhost:%s/proxy/%s/har' % (self.port_firefox,self.browser_port)) #read data in har
             sys.stdout.write("порт прокси браузера = %s \nпорт для har = %s \n" % (self.browser_port,self.browser_port))
 
         except WebDriverException as err:
@@ -65,16 +62,29 @@ class BMP_FF():
 
     def start_data_proxy(self):
         """метод выводит какие данные прошли через прокси bmpproxy"""
-        """ no implementation"""
-        self.resp_har = requests.put('http://localhost:8082/proxy/' + str(self.bmp_port.port) + '/har', {"initialPageRef": ""})# начинаю сессию мониторинга
+        """Если нужно получить данные то сначала вызывать этот  метод а потом уже start_firefox_url(site_url) """
+        self.resp= requests.put('http://localhost:%s/proxy/%s/har' % (self.port_firefox,self.browser_port), {"initialPageRef": ""})# начинаю сессию мониторинга
     def read_data_proxy(self):
-        """no implementation"""
-        self.resp = requests.get('http://localhost:8082/proxy/' + str(self.bmp_port.port) + '/har')
+        """сохраняю запросы/ответы в object.rest.content"""
+        self.resp = requests.get('http://localhost:%s/proxy/%s/har' % (self.port_firefox,self.browser_port)) #read data in har
         self.resp.content
         self.resp.json()
         
     def bmp_stop(self):
-        """метод отстановки browsermobproxy но порты почему то заняты остаются ((("""
+        """метод отстановки browsermobproxy и закрывает браузер firefox """
+        self.driver.close() #закрываю браузер firefox
         self.bmpproxy.stop()
         sys.stdout.write('brouwsermobproxy остановлен, объект уничтожен' + '\n')
 #======================================================================================
+
+
+
+
+
+
+
+
+
+
+
+
